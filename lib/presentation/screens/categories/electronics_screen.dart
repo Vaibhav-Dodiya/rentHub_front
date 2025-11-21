@@ -27,7 +27,7 @@ class _MyElectronicsState extends State<MyElectronics> {
   Future<void> _loadProducts() async {
     setState(() => isLoading = true);
     try {
-      final fetchedProperties = await ApiService.getAllProperties();
+      final fetchedProperties = await ApiService.getPropertiesByCategory('ELECTRONICS');
       setState(() {
         products = fetchedProperties.map((prop) {
           return {
@@ -240,14 +240,13 @@ class _MyElectronicsState extends State<MyElectronics> {
 
                               setModalState(() => isUploading = true);
 
-                              final result = await ApiService.uploadProperty(
-                                title: titleController.text,
-                                location: locationController.text,
-                                price: int.tryParse(priceController.text) ?? 0,
-                                images: _selectedImages,
-                              );
-
-                              setModalState(() => isUploading = false);
+                      final result = await ApiService.uploadProperty(
+                        title: titleController.text,
+                        location: locationController.text,
+                        price: int.tryParse(priceController.text) ?? 0,
+                        images: _selectedImages,
+                        category: 'ELECTRONICS',
+                      );                              setModalState(() => isUploading = false);
 
                               if (result['status'] == 'error') {
                                 if (context.mounted) {

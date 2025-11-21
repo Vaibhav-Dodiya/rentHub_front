@@ -43,6 +43,7 @@ class ApiService {
     required String location,
     required int price,
     required List<File> images,
+    String category = 'PROPERTY',
   }) async {
     try {
       var request = http.MultipartRequest(
@@ -54,6 +55,7 @@ class ApiService {
       request.fields['title'] = title;
       request.fields['location'] = location;
       request.fields['price'] = price.toString();
+      request.fields['category'] = category;
 
       // Add image files
       for (var image in images) {
@@ -101,6 +103,24 @@ class ApiService {
       }
     } catch (e) {
       print('Error fetching properties: $e');
+      return [];
+    }
+  }
+
+  /// Fetch properties by category from backend
+  static Future<List<dynamic>> getPropertiesByCategory(String category) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/properties/category/$category'),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as List<dynamic>;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching properties by category: $e');
       return [];
     }
   }

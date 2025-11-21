@@ -95,7 +95,7 @@ class _MyLoginState extends State<MyLogin> {
             Container(
               padding: const EdgeInsets.only(left: 35, top: 130),
               child: const Text(
-                'Welcome Back',
+                'Welcome',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 33,
@@ -228,10 +228,7 @@ class _MyLoginState extends State<MyLogin> {
                           vertical: 15,
                         ),
                       ),
-                      child: const Text(
-                        "Check",
-                        style: TextStyle(fontSize: 18, color: Colors.white),
-                      ),
+              
                     ),
                   ],
                 ),
