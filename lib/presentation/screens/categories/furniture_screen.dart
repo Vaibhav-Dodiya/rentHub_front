@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:loginsignup/core/services/api_service.dart';
+import 'package:loginsignup/data/local/global_data.dart';
 
 class MyFurniture extends StatefulWidget {
   const MyFurniture({super.key});
@@ -10,70 +12,68 @@ class MyFurniture extends StatefulWidget {
 }
 
 class _MyFurnitureState extends State<MyFurniture> {
-  final List<Map<String, dynamic>> products = [
-    {
-      "image": "assets/furniture/almirah.jpg",
-      "title": "Almirah for your Bedroom",
-      "price": 1250,
-      "oldPrice": 1680,
-      "discount": "41% off",
-      "rating": 4.2,
-      "reviews": 6331,
-      "delivery": "₹350 Delivery",
-      "userUploaded": false,
-    },
-    {
-      "image": "assets/furniture/chairs2.jpg",
-      "title": "Comfortable Chair",
-      "price": 400,
-      "oldPrice": 499,
-      "discount": "21% off",
-      "rating": 4.0,
-      "reviews": 3175,
-      "delivery": "Delivery ₹140",
-      "userUploaded": false,
-    },
-    {
-      "image": "assets/furniture/chairs.jpg",
-      "title": "Wooden Chairs Set of 2",
-      "price": 700,
-      "oldPrice": 900,
-      "discount": "18% off",
-      "rating": 4.4,
-      "reviews": 599,
-      "delivery": "Delivery ₹160",
-      "userUploaded": false,
-    },
-    {
-      "image": "assets/furniture/almirah.jpg",
-      "title": "Almirah for Clothes",
-      "price": 900,
-      "oldPrice": 1130,
-      "discount": "18% off",
-      "rating": 4.1,
-      "reviews": 2968,
-      "delivery": "Delivery ₹240",
-      "userUploaded": false,
-    },
-  ];
+  List<Map<String, dynamic>> products = [];
+  bool isLoading = true;
 
-  File? _selectedImage;
+  List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    setState(() => isLoading = true);
+    try {
+      final fetchedProperties = await ApiService.getAllProperties();
+      setState(() {
+        products = fetchedProperties.map((prop) {
+          return {
+            "id": prop['id'],
+            "imageUrls": prop['imageUrls'] ?? [],
+            "title": prop['title'] ?? 'Untitled',
+            "price": (prop['price'] ?? 0).toInt(),
+            "location": prop['location'] ?? 'Unknown',
+            "oldPrice": (prop['oldPrice'] ?? 0).toInt(),
+            "discount": prop['discount'] ?? '',
+            "delivery": prop['deliveryInfo'] ?? '',
+            "userUploaded": false,
+          };
+        }).toList();
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading items: $e')),
+        );
+      }
+    }
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _selectedImage = File(pickedFile.path);
+        _selectedImages.add(File(pickedFile.path));
       });
     }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
   }
 
   void _showUploadForm() {
     final titleController = TextEditingController();
     final priceController = TextEditingController();
-    final oldPriceController = TextEditingController();
-    final deliveryController = TextEditingController();
+    final locationController = TextEditingController();
+    bool isUploading = false;
 
     showModalBottomSheet(
       context: context,
@@ -82,148 +82,230 @@ class _MyFurnitureState extends State<MyFurniture> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            left: 16,
-            right: 16,
-            top: 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  "Upload New Item",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Stack(
-                  alignment: Alignment.topRight,
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+                left: 16,
+                right: 16,
+                top: 20,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    _selectedImage != null
-                        ? Image.file(
-                            _selectedImage!,
-                            height: 150,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          )
-                        : Container(
-                            height: 150,
-                            width: double.infinity,
-                            color: Colors.grey[200],
-                            child: const Icon(Icons.image, size: 50),
-                          ),
-                    if (_selectedImage != null)
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.red),
-                        onPressed: () {
-                          setState(() {
-                            _selectedImage = null;
-                          });
-                        },
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text("Camera"),
+                    const Text(
+                      "Upload New Item",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(width: 10),
-                    ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.photo),
-                      label: const Text("Gallery"),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: "Item Title",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: priceController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "New Price",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: oldPriceController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: "Old Price",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: deliveryController,
-                  decoration: const InputDecoration(
-                    labelText: "Delivery Info",
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    if (titleController.text.isEmpty ||
-                        priceController.text.isEmpty ||
-                        _selectedImage == null) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            "Please fill all fields and select an image",
-                          ),
+                    const SizedBox(height: 16),
+                    if (_selectedImages.isNotEmpty)
+                      SizedBox(
+                        height: 120,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _selectedImages.length,
+                          itemBuilder: (context, index) {
+                            return Stack(
+                              children: [
+                                Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  width: 120,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.file(
+                                      _selectedImages[index],
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 4,
+                                  right: 12,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      _removeImage(index);
+                                      setModalState(() {});
+                                    },
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      padding: const EdgeInsets.all(4),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
-                      );
-                      return;
-                    }
-
-                    setState(() {
-                      products.add({
-                        "image": _selectedImage!.path,
-                        "title": titleController.text,
-                        "price": int.tryParse(priceController.text) ?? 0,
-                        "oldPrice": int.tryParse(oldPriceController.text) ?? 0,
-                        "discount": "New",
-                        "rating": 0.0,
-                        "reviews": 0,
-                        "delivery": deliveryController.text,
-                        "userUploaded": true,
-                      });
-                      _selectedImage = null;
-                    });
-
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      )
+                    else
+                      Container(
+                        height: 120,
+                        width: double.infinity,
+                        color: Colors.grey[200],
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.image, size: 50, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text('No images selected'),
+                          ],
+                        ),
+                      ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: isUploading
+                              ? null
+                              : () async {
+                                  await _pickImage(ImageSource.camera);
+                                  setModalState(() {});
+                                },
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text("Camera"),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton.icon(
+                          onPressed: isUploading
+                              ? null
+                              : () async {
+                                  await _pickImage(ImageSource.gallery);
+                                  setModalState(() {});
+                                },
+                          icon: const Icon(Icons.photo),
+                          label: const Text("Gallery"),
+                        ),
+                      ],
                     ),
-                  ),
-                  child: const Text("Add Item"),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: "Item Title",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: locationController,
+                      decoration: const InputDecoration(
+                        labelText: "Location",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: priceController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        labelText: "Price (₹)",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    isUploading
+                        ? const Column(
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 10),
+                              Text('Uploading to server...'),
+                            ],
+                          )
+                        : ElevatedButton(
+                            onPressed: () async {
+                              if (titleController.text.isEmpty ||
+                                  locationController.text.isEmpty ||
+                                  priceController.text.isEmpty ||
+                                  _selectedImages.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Please fill all fields and select at least one image",
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+
+                              setModalState(() => isUploading = true);
+
+                              final result = await ApiService.uploadProperty(
+                                title: titleController.text,
+                                location: locationController.text,
+                                price: int.tryParse(priceController.text) ?? 0,
+                                images: _selectedImages,
+                              );
+
+                              setModalState(() => isUploading = false);
+
+                              if (result['status'] == 'error') {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(result['message']),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              } else {
+                                // Add to global data
+                                GlobalData.addItem({
+                                  'title': titleController.text,
+                                  'price': priceController.text,
+                                  'location': locationController.text,
+                                  'image': _selectedImages.first,
+                                });
+
+                                setState(() {
+                                  _selectedImages.clear();
+                                });
+
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Item uploaded successfully!'),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+
+                                // Reload products
+                                _loadProducts();
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.brown,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text("Upload Item"),
+                          ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
-    );
+    ).whenComplete(() {
+      setState(() {
+        _selectedImages.clear();
+      });
+    });
   }
 
   Widget _buildProductCard(
@@ -231,9 +313,10 @@ class _MyFurnitureState extends State<MyFurniture> {
     int index,
     double imageHeight,
   ) {
-    final imagePath = product["image"];
+    final imageUrls = product["imageUrls"] as List<dynamic>?;
     final String? discount = product["discount"];
     final bool isNew = discount == "New";
+    final String? productId = product["id"];
 
     return Stack(
       children: [
@@ -252,9 +335,32 @@ class _MyFurnitureState extends State<MyFurniture> {
                 child: SizedBox(
                   height: imageHeight,
                   width: double.infinity,
-                  child: imagePath.startsWith("assets/")
-                      ? Image.asset(imagePath, fit: BoxFit.cover)
-                      : Image.file(File(imagePath), fit: BoxFit.cover),
+                  child: imageUrls != null && imageUrls.isNotEmpty
+                      ? Image.network(
+                          imageUrls[0],
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            );
+                          },
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Icon(Icons.broken_image, size: 50),
+                            );
+                          },
+                        )
+                      : Container(
+                          color: Colors.grey[300],
+                          child: const Icon(Icons.chair, size: 50),
+                        ),
                 ),
               ),
               Padding(
@@ -276,6 +382,7 @@ class _MyFurnitureState extends State<MyFurniture> {
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
+                            color: Colors.brown,
                           ),
                         ),
                         const SizedBox(width: 5),
@@ -291,9 +398,18 @@ class _MyFurnitureState extends State<MyFurniture> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      product["delivery"],
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            product["location"] ?? "Unknown",
+                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -317,15 +433,50 @@ class _MyFurnitureState extends State<MyFurniture> {
               ),
             ),
           ),
-        if (product["userUploaded"] == true)
+        if (product["userUploaded"] == true && productId != null)
           Positioned(
             top: 4,
             right: 4,
             child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  products.removeAt(index);
-                });
+              onTap: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Item'),
+                    content: const Text('Are you sure you want to delete this item?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  final success = await ApiService.deleteProperty(productId);
+                  if (success) {
+                    _loadProducts();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Item deleted successfully')),
+                      );
+                    }
+                  } else {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to delete item'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
               },
               child: Container(
                 decoration: const BoxDecoration(
@@ -352,27 +503,64 @@ class _MyFurnitureState extends State<MyFurniture> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("✨ Choose Your Furniture"),
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.brown,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadProducts,
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(12),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: crossAxisCount,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: cardWidth / (imageHeight + 100),
-        ),
-        itemCount: products.length,
-        itemBuilder: (context, index) {
-          return _buildProductCard(products[index], index, imageHeight);
-        },
-      ),
+      body: isLoading
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading items...'),
+                ],
+              ),
+            )
+          : products.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.chair, size: 80, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No furniture available',
+                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Upload your first item!',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: cardWidth / (imageHeight + 100),
+                  ),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    return _buildProductCard(products[index], index, imageHeight);
+                  },
+                ),
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.brown,
         icon: const Icon(Icons.add),
         label: const Text("Upload Item"),
         onPressed: _showUploadForm,
