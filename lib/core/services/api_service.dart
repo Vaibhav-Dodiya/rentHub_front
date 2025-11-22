@@ -102,7 +102,7 @@ class ApiService {
         return [];
       }
     } catch (e) {
-      print('Error fetching properties: $e');
+      // Error fetching properties
       return [];
     }
   }
@@ -120,7 +120,7 @@ class ApiService {
         return [];
       }
     } catch (e) {
-      print('Error fetching properties by category: $e');
+      // Error fetching properties by category
       return [];
     }
   }
@@ -134,7 +134,7 @@ class ApiService {
 
       return response.statusCode == 204 || response.statusCode == 200;
     } catch (e) {
-      print('Error deleting property: $e');
+      // Error deleting property
       return false;
     }
   }

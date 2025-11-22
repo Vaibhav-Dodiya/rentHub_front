@@ -15,7 +15,7 @@ class _MyPropertyState extends State<MyProperty> {
   List<Map<String, dynamic>> properties = [];
   bool isLoading = true;
   
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
 
   @override

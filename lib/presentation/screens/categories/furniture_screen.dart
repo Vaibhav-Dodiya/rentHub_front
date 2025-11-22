@@ -15,7 +15,7 @@ class _MyFurnitureState extends State<MyFurniture> {
   List<Map<String, dynamic>> products = [];
   bool isLoading = true;
 
-  List<File> _selectedImages = [];
+  final List<File> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
