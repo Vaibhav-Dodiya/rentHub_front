@@ -1,9 +1,7 @@
 {
-  "version": 2,
   "buildCommand": "flutter/bin/flutter build web --release --dart-define=API_BASE_URL=https://renthub-4.onrender.com",
   "outputDirectory": "build/web",
-  "installCommand": "if [ -d flutter ]; then cd flutter && git pull && cd ..; else git clone https://github.com/flutter/flutter.git --depth 1 -b stable; fi && flutter/bin/flutter config --no-analytics && flutter/bin/flutter doctor -v && flutter/bin/flutter pub get",
-  "framework": null,
+  "installCommand": "if [ ! -d flutter ]; then git clone https://github.com/flutter/flutter.git --depth 1 -b stable; fi && flutter/bin/flutter config --no-analytics && flutter/bin/flutter precache --web && flutter/bin/flutter pub get",
   "routes": [
     {
       "src": "/(.*)",
