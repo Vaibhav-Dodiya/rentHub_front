@@ -1,6 +1,7 @@
 {
+  "installCommand": "echo 'Skipping install'",
   "buildCommand": "echo 'Using pre-built files'",
-  "outputDirectory": "build/web",
+  "outputDirectory": "./build/web",
   "rewrites": [
     {
       "source": "/(.*)",
