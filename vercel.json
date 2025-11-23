@@ -1,7 +1,7 @@
 {
-  "installCommand": "echo 'Skipping install'",
-  "buildCommand": "echo 'Using pre-built files'",
+  "buildCommand": "ls -la build/web",
   "outputDirectory": "build/web",
+  "installCommand": "echo 'No install needed - using pre-built files'",
   "routes": [
     {
       "src": "/(.*)",
