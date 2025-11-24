@@ -4,6 +4,7 @@ import 'package:loginsignup/presentation/screens/auth/forgot_password_screen.dar
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:loginsignup/core/config/config.dart';
+import 'package:loginsignup/data/local/user_storage.dart';
 
 class MyLogin extends StatefulWidget {
   const MyLogin({super.key});
@@ -56,8 +57,18 @@ class _MyLoginState extends State<MyLogin> {
           responseData['message']?.toString() ?? 'Unknown error';
 
       if (response.statusCode == 200 && backendStatus == 'success') {
+        // Save user data
+        await UserStorage.saveUser(
+          userId: responseData['userId'] ?? '',
+          username: responseData['username'] ?? '',
+          email: responseData['email'] ?? '',
+          role: responseData['role'] ?? 'CUSTOMER',
+        );
+        
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Login Successful!")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Login Successful! Welcome ${responseData['username']}")),
+        );
         Future.delayed(const Duration(milliseconds: 200), () {
           if (!mounted) return;
           Navigator.pushReplacement(

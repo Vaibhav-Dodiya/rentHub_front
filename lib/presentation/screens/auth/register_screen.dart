@@ -17,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  String _selectedRole = 'CUSTOMER'; // Default role
 
   Future<void> _registerUser() async {
     if (!_formKey.currentState!.validate()) return;
@@ -28,6 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'username': _nameController.text.trim(),
       'email': _emailController.text.trim(),
       'password': _passwordController.text.trim(),
+      'role': _selectedRole,
     });
 
     try {
@@ -127,6 +129,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         return 'Password too short';
                       }
                       return null;
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Register As',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'CUSTOMER', child: Text('Customer')),
+                      DropdownMenuItem(value: 'OWNER', child: Text('Owner')),
+                      DropdownMenuItem(value: 'ADMIN', child: Text('Admin')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedRole = value!;
+                      });
                     },
                   ),
                   const SizedBox(height: 30),
