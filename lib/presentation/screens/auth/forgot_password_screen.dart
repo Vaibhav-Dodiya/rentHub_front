@@ -17,7 +17,6 @@ class _MyForgotState extends State<MyForgotPassword> {
   final TextEditingController newPasswordController = TextEditingController();
   bool isLoading = false;
   bool otpSent = false;
-  String? generatedOtp;
 
   Future<void> sendOTP() async {
     final email = emailController.text.trim();
@@ -43,10 +42,9 @@ class _MyForgotState extends State<MyForgotPassword> {
         if (response.statusCode == 200 && resBody['status'] == 'success') {
           setState(() {
             otpSent = true;
-            generatedOtp = resBody['otp'];
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP sent! Check below.')),
+            const SnackBar(content: Text('OTP sent to your email! Please check your inbox.')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -209,45 +207,43 @@ class _MyForgotState extends State<MyForgotPassword> {
                     
                     if (otpSent) ...[
                       const SizedBox(height: 30),
-                      if (generatedOtp != null)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.2),
-                            border: Border.all(color: Colors.green, width: 2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            children: [
-                              const Text(
-                                'Your OTP Code:',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                generatedOtp!,
-                                style: const TextStyle(
-                                  color: Colors.greenAccent,
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 8,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Enter this code below',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.2),
+                          border: Border.all(color: Colors.blue, width: 2),
+                          borderRadius: BorderRadius.circular(10),
                         ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.email, color: Colors.blueAccent, size: 30),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'OTP Sent!',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Check your email inbox for the OTP code',
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.8),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       const SizedBox(height: 20),
                       TextField(
                         controller: otpController,
