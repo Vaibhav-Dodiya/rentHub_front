@@ -48,7 +48,7 @@ class ApiService {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('$baseUrl/api/properties/upload'),
+        Uri.parse('$baseUrl/api/properties/upload-files'),
       );
 
       // Add text fields
@@ -82,19 +82,14 @@ class ApiService {
         };
       }
     } catch (e) {
-      return {
-        'status': 'error',
-        'message': 'Network error: $e',
-      };
+      return {'status': 'error', 'message': 'Network error: $e'};
     }
   }
 
   /// Fetch all properties from backend
   static Future<List<dynamic>> getAllProperties() async {
     try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/properties'),
-      );
+      final response = await http.get(Uri.parse('$baseUrl/api/properties'));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as List<dynamic>;
