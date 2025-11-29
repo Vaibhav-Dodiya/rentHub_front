@@ -11,6 +11,9 @@ class Config {
 
   static String get baseUrl {
     if (_envBaseUrl.isNotEmpty) return _envBaseUrl;
-    return kReleaseMode ? _prodBaseUrl : _devBaseUrl;
+    // Temporarily force localhost for testing
+    const url = _devBaseUrl; // Force dev mode
+    print('🔗 API Base URL: $url (Release Mode: $kReleaseMode)');
+    return url;
   }
 }
