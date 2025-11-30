@@ -11,9 +11,20 @@ class Config {
 
   static String get baseUrl {
     if (_envBaseUrl.isNotEmpty) return _envBaseUrl;
-    // Temporarily force localhost for testing
-    const url = _devBaseUrl; // Force dev mode
-    print('🔗 API Base URL: $url (Release Mode: $kReleaseMode)');
+
+    // Use production URL in release mode, localhost in debug mode
+    String url;
+    if (kReleaseMode) {
+      url = _prodBaseUrl; // Production: Render backend
+    } else if (kIsWeb) {
+      url = _devBaseUrl; // Web debug: localhost:8080
+    } else {
+      // Mobile debug: Use 10.0.2.2 for Android emulator
+      // For physical device, replace with your computer's IP (e.g., '192.168.1.100:8080')
+      url = 'http://10.0.2.2:8080';
+    }
+
+    print('🔗 API Base URL: $url (Release: $kReleaseMode, IsWeb: $kIsWeb)');
     return url;
   }
 }

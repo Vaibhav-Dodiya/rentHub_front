@@ -44,6 +44,7 @@ class ApiService {
     required int price,
     required List<File> images,
     String category = 'PROPERTY',
+    String? uploadedBy,
   }) async {
     try {
       var request = http.MultipartRequest(
@@ -56,6 +57,9 @@ class ApiService {
       request.fields['location'] = location;
       request.fields['price'] = price.toString();
       request.fields['category'] = category;
+      if (uploadedBy != null && uploadedBy.isNotEmpty) {
+        request.fields['uploadedBy'] = uploadedBy;
+      }
 
       // Add image files
       for (var image in images) {
