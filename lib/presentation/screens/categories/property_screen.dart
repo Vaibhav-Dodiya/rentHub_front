@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loginsignup/core/services/api_service.dart';
@@ -14,8 +14,8 @@ class MyProperty extends StatefulWidget {
 class _MyPropertyState extends State<MyProperty> {
   List<Map<String, dynamic>> properties = [];
   bool isLoading = true;
-  
-  final List<File> _selectedImages = [];
+
+  final List<XFile> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -27,7 +27,9 @@ class _MyPropertyState extends State<MyProperty> {
   Future<void> _loadProperties() async {
     setState(() => isLoading = true);
     try {
-      final fetchedProperties = await ApiService.getPropertiesByCategory('PROPERTY');
+      final fetchedProperties = await ApiService.getPropertiesByCategory(
+        'PROPERTY',
+      );
       setState(() {
         properties = fetchedProperties.map((prop) {
           return {
@@ -47,9 +49,9 @@ class _MyPropertyState extends State<MyProperty> {
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading properties: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading properties: $e')));
       }
     }
   }
@@ -58,7 +60,7 @@ class _MyPropertyState extends State<MyProperty> {
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
-        _selectedImages.add(File(pickedFile.path));
+        _selectedImages.add(pickedFile);
       });
     }
   }
@@ -97,7 +99,10 @@ class _MyPropertyState extends State<MyProperty> {
                   children: [
                     const Text(
                       "Upload New Property",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     if (_selectedImages.isNotEmpty)
@@ -114,9 +119,20 @@ class _MyPropertyState extends State<MyProperty> {
                                   width: 120,
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: Image.file(
-                                      _selectedImages[index],
-                                      fit: BoxFit.cover,
+                                    child: FutureBuilder<Uint8List>(
+                                      future: _selectedImages[index]
+                                          .readAsBytes(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasData) {
+                                          return Image.memory(
+                                            snapshot.data!,
+                                            fit: BoxFit.cover,
+                                          );
+                                        }
+                                        return const Center(
+                                          child: CircularProgressIndicator(),
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
@@ -240,13 +256,14 @@ class _MyPropertyState extends State<MyProperty> {
 
                               setModalState(() => isUploading = true);
 
-                      final result = await ApiService.uploadProperty(
-                        title: titleController.text,
-                        location: locationController.text,
-                        price: int.tryParse(priceController.text) ?? 0,
-                        images: _selectedImages,
-                        category: 'PROPERTY',
-                      );                              setModalState(() => isUploading = false);
+                              final result = await ApiService.uploadProperty(
+                                title: titleController.text,
+                                location: locationController.text,
+                                price: int.tryParse(priceController.text) ?? 0,
+                                images: _selectedImages,
+                                category: 'PROPERTY',
+                              );
+                              setModalState(() => isUploading = false);
 
                               if (result['status'] == 'error') {
                                 if (context.mounted) {
@@ -274,7 +291,9 @@ class _MyPropertyState extends State<MyProperty> {
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text('Property uploaded successfully!'),
+                                      content: Text(
+                                        'Property uploaded successfully!',
+                                      ),
                                       backgroundColor: Colors.green,
                                     ),
                                   );
@@ -342,9 +361,10 @@ class _MyPropertyState extends State<MyProperty> {
                             if (loadingProgress == null) return child;
                             return Center(
                               child: CircularProgressIndicator(
-                                value: loadingProgress.expectedTotalBytes != null
+                                value:
+                                    loadingProgress.expectedTotalBytes != null
                                     ? loadingProgress.cumulativeBytesLoaded /
-                                        loadingProgress.expectedTotalBytes!
+                                          loadingProgress.expectedTotalBytes!
                                     : null,
                               ),
                             );
@@ -399,12 +419,19 @@ class _MyPropertyState extends State<MyProperty> {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             property["location"] ?? "Unknown",
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -442,7 +469,9 @@ class _MyPropertyState extends State<MyProperty> {
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Delete Property'),
-                    content: const Text('Are you sure you want to delete this property?'),
+                    content: const Text(
+                      'Are you sure you want to delete this property?',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -450,7 +479,10 @@ class _MyPropertyState extends State<MyProperty> {
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
                       ),
                     ],
                   ),
@@ -462,7 +494,9 @@ class _MyPropertyState extends State<MyProperty> {
                     _loadProperties();
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Property deleted successfully')),
+                        const SnackBar(
+                          content: Text('Property deleted successfully'),
+                        ),
                       );
                     }
                   } else {
@@ -527,37 +561,41 @@ class _MyPropertyState extends State<MyProperty> {
               ),
             )
           : properties.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.home_outlined, size: 80, color: Colors.grey[400]),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No properties available',
-                        style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Upload your first property!',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.home_outlined, size: 80, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No properties available',
+                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
-                )
-              : GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: cardWidth / (imageHeight + 100),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Upload your first property!',
+                    style: TextStyle(color: Colors.grey),
                   ),
-                  itemCount: properties.length,
-                  itemBuilder: (context, index) {
-                    return _buildPropertyCard(properties[index], index, imageHeight);
-                  },
-                ),
+                ],
+              ),
+            )
+          : GridView.builder(
+              padding: const EdgeInsets.all(12),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
+                childAspectRatio: cardWidth / (imageHeight + 100),
+              ),
+              itemCount: properties.length,
+              itemBuilder: (context, index) {
+                return _buildPropertyCard(
+                  properties[index],
+                  index,
+                  imageHeight,
+                );
+              },
+            ),
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.green,
         icon: const Icon(Icons.add),

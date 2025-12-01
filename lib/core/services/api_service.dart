@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:loginsignup/core/config/config.dart';
 
 class ApiService {
@@ -42,7 +42,7 @@ class ApiService {
     required String title,
     required String location,
     required int price,
-    required List<File> images,
+    required List<XFile> images,
     String category = 'PROPERTY',
     String? uploadedBy,
   }) async {
@@ -61,15 +61,13 @@ class ApiService {
         request.fields['uploadedBy'] = uploadedBy;
       }
 
-      // Add image files
+      // Add image files - web compatible
       for (var image in images) {
-        var stream = http.ByteStream(image.openRead());
-        var length = await image.length();
-        var multipartFile = http.MultipartFile(
+        var bytes = await image.readAsBytes();
+        var multipartFile = http.MultipartFile.fromBytes(
           'images',
-          stream,
-          length,
-          filename: image.path.split('/').last,
+          bytes,
+          filename: image.name,
         );
         request.files.add(multipartFile);
       }
