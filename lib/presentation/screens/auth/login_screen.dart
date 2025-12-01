@@ -18,6 +18,7 @@ class _MyLoginState extends State<MyLogin> {
   TextEditingController passwordController = TextEditingController();
 
   bool isLoading = false;
+  String _selectedRole = 'CUSTOMER'; // Default role selection
 
   Future<void> loginUser() async {
     final email = emailController.text.trim();
@@ -55,8 +56,23 @@ class _MyLoginState extends State<MyLogin> {
           responseData['status']?.toString().toLowerCase() ?? 'error';
       final backendMessage =
           responseData['message']?.toString() ?? 'Unknown error';
+      final userRole = responseData['role']?.toString() ?? 'CUSTOMER';
 
+      // Check if the role matches the selected role
       if (response.statusCode == 200 && backendStatus == 'success') {
+        if (userRole != _selectedRole) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Invalid login! You are registered as ${userRole.toLowerCase()}, but trying to login as ${_selectedRole.toLowerCase()}',
+              ),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
         // Save user data
         await UserStorage.saveUser(
           userId: responseData['userId'] ?? '',
@@ -64,10 +80,14 @@ class _MyLoginState extends State<MyLogin> {
           email: responseData['email'] ?? '',
           role: responseData['role'] ?? 'CUSTOMER',
         );
-        
+
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Login Successful! Welcome ${responseData['username']}")),
+          SnackBar(
+            content: Text(
+              "Login Successful! Welcome ${responseData['username']}",
+            ),
+          ),
         );
         Future.delayed(const Duration(milliseconds: 200), () {
           if (!mounted) return;
@@ -78,12 +98,16 @@ class _MyLoginState extends State<MyLogin> {
         });
       } else {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(backendMessage)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(backendMessage)));
       }
     } catch (e) {
       debugPrint('LOGIN: exception: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Network error: $e")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Network error: $e")));
       }
     } finally {
       setState(() => isLoading = false);
@@ -145,6 +169,80 @@ class _MyLoginState extends State<MyLogin> {
                         hintText: 'Password',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
+
+                    // User Type Selection
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white70,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade400),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedRole,
+                          isExpanded: true,
+                          icon: const Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.black54,
+                          ),
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 16,
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'CUSTOMER',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.person,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text('Login as Customer'),
+                                ],
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'OWNER',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.business,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text('Login as Owner'),
+                                ],
+                              ),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ADMIN',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.admin_panel_settings,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text('Login as Admin'),
+                                ],
+                              ),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _selectedRole = value!;
+                            });
+                          },
                         ),
                       ),
                     ),
