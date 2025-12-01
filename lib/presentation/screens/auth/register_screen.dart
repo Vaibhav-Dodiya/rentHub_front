@@ -16,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _adminKeyController = TextEditingController();
   bool _isLoading = false;
   String _selectedRole = 'CUSTOMER'; // Default role
 
@@ -30,6 +31,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       'email': _emailController.text.trim(),
       'password': _passwordController.text.trim(),
       'role': _selectedRole,
+      if (_selectedRole == 'ADMIN')
+        'adminSecretKey': _adminKeyController.text.trim(),
     });
 
     try {
@@ -43,19 +46,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (response.statusCode == 200 && resBody['status'] == 'success') {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(resBody['message'])));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(resBody['message'])));
         if (!mounted) return;
         Navigator.pushReplacementNamed(context, '/login');
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(resBody['message'] ?? 'Registration failed')),
+            SnackBar(
+              content: Text(resBody['message'] ?? 'Registration failed'),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       setState(() => _isLoading = false);
@@ -141,7 +150,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       prefixIcon: Icon(Icons.person_outline),
                     ),
                     items: const [
-                      DropdownMenuItem(value: 'CUSTOMER', child: Text('Customer')),
+                      DropdownMenuItem(
+                        value: 'CUSTOMER',
+                        child: Text('Customer'),
+                      ),
                       DropdownMenuItem(value: 'OWNER', child: Text('Owner')),
                       DropdownMenuItem(value: 'ADMIN', child: Text('Admin')),
                     ],
@@ -151,7 +163,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       });
                     },
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 20),
+
+                  // Admin Secret Key field - only visible when ADMIN is selected
+                  if (_selectedRole == 'ADMIN')
+                    Column(
+                      children: [
+                        TextFormField(
+                          controller: _adminKeyController,
+                          obscureText: true,
+                          decoration: const InputDecoration(
+                            labelText: 'Admin Secret Key',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.vpn_key),
+                            hintText: 'Enter admin secret key',
+                            helperText:
+                                'Contact administrator for the secret key',
+                            helperMaxLines: 2,
+                          ),
+                          validator: (value) {
+                            if (_selectedRole == 'ADMIN' &&
+                                (value == null || value.isEmpty)) {
+                              return 'Admin secret key is required';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
 
                   _isLoading
                       ? const CircularProgressIndicator()
