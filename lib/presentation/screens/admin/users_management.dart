@@ -23,24 +23,32 @@ class _UsersManagementState extends State<UsersManagement> {
   Future<void> _loadUsers() async {
     setState(() => isLoading = true);
     try {
-      final response = await http.get(
-        Uri.parse('${Config.baseUrl}/api/admin/users'),
-      );
+      final url = '${Config.baseUrl}/api/admin/users';
+      debugPrint('Loading users from: $url');
+
+      final response = await http.get(Uri.parse(url));
+
+      debugPrint('Users response status: ${response.statusCode}');
+      debugPrint('Users response body: ${response.body}');
 
       if (response.statusCode == 200) {
         setState(() {
           users = jsonDecode(response.body);
           isLoading = false;
         });
+        debugPrint('Loaded ${users.length} users');
       } else {
         setState(() => isLoading = false);
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Failed to load users')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load users: ${response.statusCode}'),
+            ),
+          );
         }
       }
     } catch (e) {
+      debugPrint('Error loading users: $e');
       setState(() => isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(
@@ -117,9 +125,19 @@ class _UsersManagementState extends State<UsersManagement> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Users Management',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+                tooltip: 'Back to Dashboard',
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Users Management',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Card(

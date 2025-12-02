@@ -117,9 +117,19 @@ class _PostsManagementState extends State<PostsManagement> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Posts Management',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+                tooltip: 'Back to Dashboard',
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Posts Management',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ],
           ),
           const SizedBox(height: 20),
           Card(
