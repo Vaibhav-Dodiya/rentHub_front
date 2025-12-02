@@ -88972,7 +88972,7 @@ var $async$u5=A.F(function(a,b){if(a===1){p.push(b)
 s=q}while(true)switch(s){case 0:o.X(new A.awk(o))
 q=3
 s=6
-return A.L(A.aBA(A.dH(A.jE()+"/admin/users")),$async$u5)
+return A.L(A.aBA(A.dH(A.jE()+"/api/admin/users")),$async$u5)
 case 6:n=b
 if(n.b===200)o.X(new A.awl(o,n))
 else{o.X(new A.awm(o))
@@ -89003,7 +89003,7 @@ return A.L(A.oJ(new A.awj(),j,t.y),$async$tG)
 case 3:if(c!==!0){s=1
 break}p=5
 s=8
-return A.L(A.ayx(A.dH(A.jE()+"/admin/users/"+a)),$async$tG)
+return A.L(A.ayx(A.dH(A.jE()+"/api/admin/users/"+a)),$async$tG)
 case 8:m=c
 if(m.b===200){j=n.c
 if(j!=null)j.N(t.q).f.bs(B.TV)

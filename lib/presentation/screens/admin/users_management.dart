@@ -24,7 +24,7 @@ class _UsersManagementState extends State<UsersManagement> {
     setState(() => isLoading = true);
     try {
       final response = await http.get(
-        Uri.parse('${Config.baseUrl}/admin/users'),
+        Uri.parse('${Config.baseUrl}/api/admin/users'),
       );
 
       if (response.statusCode == 200) {
@@ -74,7 +74,7 @@ class _UsersManagementState extends State<UsersManagement> {
 
     try {
       final response = await http.delete(
-        Uri.parse('${Config.baseUrl}/admin/users/$userId'),
+        Uri.parse('${Config.baseUrl}/api/admin/users/$userId'),
       );
 
       if (response.statusCode == 200) {
