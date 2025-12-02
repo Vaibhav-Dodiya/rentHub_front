@@ -113,7 +113,7 @@ class _PostsManagementState extends State<PostsManagement> {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 8),
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
