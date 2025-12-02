@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loginsignup/presentation/screens/home/home_screen.dart';
+import 'package:loginsignup/presentation/screens/admin/admin_dashboard.dart';
 import 'package:loginsignup/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -91,10 +92,18 @@ class _MyLoginState extends State<MyLogin> {
         );
         Future.delayed(const Duration(milliseconds: 200), () {
           if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
+          // Redirect based on role
+          if (userRole == 'ADMIN') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const AdminDashboard()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+            );
+          }
         });
       } else {
         if (!mounted) return;
