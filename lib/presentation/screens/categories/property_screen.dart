@@ -596,12 +596,6 @@ class _MyPropertyState extends State<MyProperty> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.green,
-        icon: const Icon(Icons.add),
-        label: const Text("Upload Property"),
-        onPressed: _showUploadForm,
-      ),
     );
   }
 }

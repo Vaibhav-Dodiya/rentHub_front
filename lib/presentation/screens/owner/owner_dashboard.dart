@@ -4,6 +4,7 @@ import 'package:loginsignup/data/local/user_storage.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:loginsignup/presentation/screens/owner/edit_property_screen.dart';
+import 'package:loginsignup/presentation/screens/owner/upload_property_screen.dart';
 import 'package:loginsignup/presentation/screens/auth/login_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
@@ -156,6 +157,22 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
             tooltip: 'Logout',
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const UploadPropertyScreen(),
+            ),
+          );
+          if (result == true) {
+            await loadOwnerProperties();
+          }
+        },
+        backgroundColor: Colors.orange,
+        icon: const Icon(Icons.add),
+        label: const Text('Upload Property'),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())

@@ -592,12 +592,6 @@ class _MyFurnitureState extends State<MyFurniture> {
                 return _buildProductCard(products[index], index, imageHeight);
               },
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.brown,
-        icon: const Icon(Icons.add),
-        label: const Text("Upload Item"),
-        onPressed: _showUploadForm,
-      ),
     );
   }
 }

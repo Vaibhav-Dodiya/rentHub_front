@@ -592,12 +592,6 @@ class _MyElectronicsState extends State<MyElectronics> {
                 return _buildProductCard(products[index], index, imageHeight);
               },
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.purple,
-        icon: const Icon(Icons.add),
-        label: const Text("Upload Item"),
-        onPressed: _showUploadForm,
-      ),
     );
   }
 }
