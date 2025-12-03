@@ -354,27 +354,9 @@ class _MyPropertyState extends State<MyProperty> {
                   height: imageHeight,
                   width: double.infinity,
                   child: imageUrls != null && imageUrls.isNotEmpty
-                      ? Image.network(
-                          imageUrls[0],
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Center(
-                              child: CircularProgressIndicator(
-                                value:
-                                    loadingProgress.expectedTotalBytes != null
-                                    ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                    : null,
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Icon(Icons.broken_image, size: 50),
-                            );
-                          },
+                      ? _ImageCarousel(
+                          imageUrls: imageUrls.cast<String>(),
+                          height: imageHeight,
                         )
                       : Container(
                           color: Colors.grey[300],
@@ -596,6 +578,162 @@ class _MyPropertyState extends State<MyProperty> {
                 );
               },
             ),
+    );
+  }
+}
+
+class _ImageCarousel extends StatefulWidget {
+  final List<String> imageUrls;
+  final double height;
+
+  const _ImageCarousel({required this.imageUrls, required this.height});
+
+  @override
+  State<_ImageCarousel> createState() => _ImageCarouselState();
+}
+
+class _ImageCarouselState extends State<_ImageCarousel> {
+  int _currentIndex = 0;
+
+  void _nextImage() {
+    if (_currentIndex < widget.imageUrls.length - 1) {
+      setState(() {
+        _currentIndex++;
+      });
+    }
+  }
+
+  void _previousImage() {
+    if (_currentIndex > 0) {
+      setState(() {
+        _currentIndex--;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        // Main Image
+        Image.network(
+          widget.imageUrls[_currentIndex],
+          width: double.infinity,
+          height: widget.height,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.grey[300],
+              child: const Icon(Icons.broken_image, size: 50),
+            );
+          },
+        ),
+
+        // Navigation Buttons (only show if multiple images)
+        if (widget.imageUrls.length > 1) ...[
+          // Previous Button
+          if (_currentIndex > 0)
+            Positioned(
+              left: 8,
+              top: widget.height / 2 - 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.chevron_left, color: Colors.white),
+                  onPressed: _previousImage,
+                  iconSize: 24,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 40,
+                  ),
+                ),
+              ),
+            ),
+
+          // Next Button
+          if (_currentIndex < widget.imageUrls.length - 1)
+            Positioned(
+              right: 8,
+              top: widget.height / 2 - 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.chevron_right, color: Colors.white),
+                  onPressed: _nextImage,
+                  iconSize: 24,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 40,
+                  ),
+                ),
+              ),
+            ),
+
+          // Image Counter Indicator
+          Positioned(
+            bottom: 8,
+            right: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${_currentIndex + 1}/${widget.imageUrls.length}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          // Dot Indicators
+          Positioned(
+            bottom: 8,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                widget.imageUrls.length,
+                (index) => Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: 6,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _currentIndex == index
+                        ? Colors.white
+                        : Colors.white.withOpacity(0.4),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
