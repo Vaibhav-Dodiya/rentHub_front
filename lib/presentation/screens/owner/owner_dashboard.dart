@@ -158,21 +158,67 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const UploadPropertyScreen(),
-            ),
-          );
-          if (result == true) {
-            await loadOwnerProperties();
-          }
-        },
-        backgroundColor: Colors.orange,
-        icon: const Icon(Icons.add),
-        label: const Text('Upload Property'),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          FloatingActionButton.extended(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const UploadPropertyScreen(category: 'PROPERTY'),
+                ),
+              );
+              if (result == true) {
+                await loadOwnerProperties();
+              }
+            },
+            heroTag: 'property',
+            backgroundColor: Colors.green,
+            icon: const Icon(Icons.home),
+            label: const Text('Upload Property'),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton.extended(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const UploadPropertyScreen(category: 'ELECTRONICS'),
+                ),
+              );
+              if (result == true) {
+                await loadOwnerProperties();
+              }
+            },
+            heroTag: 'electronics',
+            backgroundColor: Colors.purple,
+            icon: const Icon(Icons.electrical_services),
+            label: const Text('Upload Electronics'),
+          ),
+          const SizedBox(height: 10),
+          FloatingActionButton.extended(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const UploadPropertyScreen(category: 'FURNITURE'),
+                ),
+              );
+              if (result == true) {
+                await loadOwnerProperties();
+              }
+            },
+            heroTag: 'furniture',
+            backgroundColor: Colors.brown,
+            icon: const Icon(Icons.chair),
+            label: const Text('Upload Furniture'),
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
