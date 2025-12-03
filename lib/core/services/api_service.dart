@@ -135,4 +135,54 @@ class ApiService {
       return false;
     }
   }
+
+  /// Update property by ID
+  static Future<Map<String, dynamic>> updateProperty({
+    required String id,
+    required String title,
+    required String location,
+    required int price,
+    required String category,
+    List<XFile>? images,
+  }) async {
+    try {
+      var request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('$baseUrl/api/properties/$id'),
+      );
+
+      // Add text fields
+      request.fields['title'] = title;
+      request.fields['location'] = location;
+      request.fields['price'] = price.toString();
+      request.fields['category'] = category;
+
+      // Add image files if provided
+      if (images != null && images.isNotEmpty) {
+        for (var image in images) {
+          var bytes = await image.readAsBytes();
+          var multipartFile = http.MultipartFile.fromBytes(
+            'images',
+            bytes,
+            filename: image.name,
+          );
+          request.files.add(multipartFile);
+        }
+      }
+
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      } else {
+        return {
+          'status': 'error',
+          'message': 'Update failed: ${response.body}',
+        };
+      }
+    } catch (e) {
+      return {'status': 'error', 'message': 'Network error: $e'};
+    }
+  }
 }

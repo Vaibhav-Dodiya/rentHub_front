@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:loginsignup/presentation/screens/home/home_screen.dart';
 import 'package:loginsignup/presentation/screens/admin/admin_dashboard.dart';
+import 'package:loginsignup/presentation/screens/owner/owner_dashboard.dart';
 import 'package:loginsignup/presentation/screens/auth/forgot_password_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -97,6 +98,11 @@ class _MyLoginState extends State<MyLogin> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const AdminDashboard()),
+            );
+          } else if (userRole == 'OWNER') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const OwnerDashboard()),
             );
           } else {
             Navigator.pushReplacement(
