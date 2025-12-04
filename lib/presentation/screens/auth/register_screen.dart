@@ -18,6 +18,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _adminKeyController = TextEditingController();
   bool _isLoading = false;
+  bool _isPasswordVisible = false; // Track password visibility
+  bool _isAdminKeyVisible = false; // Track admin key visibility
   String _selectedRole = 'CUSTOMER'; // Default role
 
   Future<void> _registerUser() async {
@@ -124,11 +126,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
                       labelText: 'Password',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.lock),
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -171,15 +185,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         TextFormField(
                           controller: _adminKeyController,
-                          obscureText: true,
-                          decoration: const InputDecoration(
+                          obscureText: !_isAdminKeyVisible,
+                          decoration: InputDecoration(
                             labelText: 'Admin Secret Key',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.vpn_key),
+                            border: const OutlineInputBorder(),
+                            prefixIcon: const Icon(Icons.vpn_key),
                             hintText: 'Enter admin secret key',
                             helperText:
                                 'Contact administrator for the secret key',
                             helperMaxLines: 2,
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isAdminKeyVisible
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isAdminKeyVisible = !_isAdminKeyVisible;
+                                });
+                              },
+                            ),
                           ),
                           validator: (value) {
                             if (_selectedRole == 'ADMIN' &&

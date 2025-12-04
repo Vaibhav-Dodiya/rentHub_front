@@ -17,13 +17,14 @@ class _MyForgotState extends State<MyForgotPassword> {
   final TextEditingController newPasswordController = TextEditingController();
   bool isLoading = false;
   bool otpSent = false;
+  bool _isPasswordVisible = false; // Track password visibility
 
   Future<void> sendOTP() async {
     final email = emailController.text.trim();
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please enter your email")));
       return;
     }
 
@@ -37,14 +38,16 @@ class _MyForgotState extends State<MyForgotPassword> {
       );
 
       final resBody = jsonDecode(response.body);
-      
+
       if (mounted) {
         if (response.statusCode == 200 && resBody['status'] == 'success') {
           setState(() {
             otpSent = true;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP sent to your email! Please check your inbox.')),
+            const SnackBar(
+              content: Text('OTP sent to your email! Please check your inbox.'),
+            ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -54,9 +57,9 @@ class _MyForgotState extends State<MyForgotPassword> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       setState(() => isLoading = false);
@@ -69,9 +72,9 @@ class _MyForgotState extends State<MyForgotPassword> {
     final newPassword = newPasswordController.text.trim();
 
     if (email.isEmpty || otp.isEmpty || newPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
       return;
     }
 
@@ -112,15 +115,17 @@ class _MyForgotState extends State<MyForgotPassword> {
           });
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(resBody['message'] ?? 'Failed to reset password')),
+            SnackBar(
+              content: Text(resBody['message'] ?? 'Failed to reset password'),
+            ),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       setState(() => isLoading = false);
@@ -187,7 +192,7 @@ class _MyForgotState extends State<MyForgotPassword> {
                       ),
                       style: const TextStyle(color: Colors.white),
                     ),
-                    
+
                     if (!otpSent) ...[
                       const SizedBox(height: 40),
                       ElevatedButton(
@@ -200,11 +205,19 @@ class _MyForgotState extends State<MyForgotPassword> {
                           ),
                         ),
                         child: isLoading
-                            ? const CircularProgressIndicator(color: Colors.white)
-                            : const Text('Send OTP', style: TextStyle(fontSize: 18, color: Colors.white)),
+                            ? const CircularProgressIndicator(
+                                color: Colors.white,
+                              )
+                            : const Text(
+                                'Send OTP',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                     ],
-                    
+
                     if (otpSent) ...[
                       const SizedBox(height: 30),
                       Container(
@@ -216,7 +229,11 @@ class _MyForgotState extends State<MyForgotPassword> {
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.email, color: Colors.blueAccent, size: 30),
+                            const Icon(
+                              Icons.email,
+                              color: Colors.blueAccent,
+                              size: 30,
+                            ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Column(
@@ -267,7 +284,7 @@ class _MyForgotState extends State<MyForgotPassword> {
                       const SizedBox(height: 20),
                       TextField(
                         controller: newPasswordController,
-                        obscureText: true,
+                        obscureText: !_isPasswordVisible,
                         decoration: InputDecoration(
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -281,6 +298,19 @@ class _MyForgotState extends State<MyForgotPassword> {
                           hintStyle: const TextStyle(color: Colors.white),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _isPasswordVisible
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              color: Colors.white70,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
                           ),
                         ),
                         style: const TextStyle(color: Colors.white),
@@ -301,7 +331,9 @@ class _MyForgotState extends State<MyForgotPassword> {
                             radius: 30,
                             backgroundColor: const Color(0xff4c505b),
                             child: isLoading
-                                ? const CircularProgressIndicator(color: Colors.white)
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  )
                                 : IconButton(
                                     onPressed: resetPassword,
                                     icon: const Icon(
@@ -313,13 +345,15 @@ class _MyForgotState extends State<MyForgotPassword> {
                         ],
                       ),
                     ],
-                    
+
                     const SizedBox(height: 20),
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const MyLogin()),
+                          MaterialPageRoute(
+                            builder: (context) => const MyLogin(),
+                          ),
                         );
                       },
                       child: const Text(

@@ -20,6 +20,7 @@ class _MyLoginState extends State<MyLogin> {
   TextEditingController passwordController = TextEditingController();
 
   bool isLoading = false;
+  bool _isPasswordVisible = false; // Track password visibility
   String _selectedRole = 'CUSTOMER'; // Default role selection
 
   Future<void> loginUser() async {
@@ -177,13 +178,26 @@ class _MyLoginState extends State<MyLogin> {
 
                     TextField(
                       controller: passwordController,
-                      obscureText: true,
+                      obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         fillColor: Colors.white70,
                         filled: true,
                         hintText: 'Password',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _isPasswordVisible
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                            color: Colors.grey[600],
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isPasswordVisible = !_isPasswordVisible;
+                            });
+                          },
                         ),
                       ),
                     ),
