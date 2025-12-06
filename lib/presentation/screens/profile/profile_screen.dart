@@ -20,7 +20,6 @@ class _ProfilePageState extends State<ProfilePage> {
   String email = "Loading...";
   String role = "Loading...";
   String userId = "";
-  String phone = "+91 9876543210";
   String address = "Indore, Madhya Pradesh";
   bool isLoading = true;
 
@@ -53,7 +52,6 @@ class _ProfilePageState extends State<ProfilePage> {
   void _editProfile() {
     TextEditingController nameController = TextEditingController(text: name);
     TextEditingController emailController = TextEditingController(text: email);
-    TextEditingController phoneController = TextEditingController(text: phone);
     TextEditingController addressController = TextEditingController(
       text: address,
     );
@@ -74,10 +72,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 decoration: const InputDecoration(labelText: "Email"),
               ),
               TextField(
-                controller: phoneController,
-                decoration: const InputDecoration(labelText: "Phone"),
-              ),
-              TextField(
                 controller: addressController,
                 decoration: const InputDecoration(labelText: "Address"),
               ),
@@ -94,7 +88,6 @@ class _ProfilePageState extends State<ProfilePage> {
               setState(() {
                 name = nameController.text;
                 email = emailController.text;
-                phone = phoneController.text;
                 address = addressController.text;
               });
               Navigator.pop(context);
@@ -261,16 +254,6 @@ class _ProfilePageState extends State<ProfilePage> {
                 leading: const Icon(Icons.badge),
                 title: Text(userId),
                 subtitle: const Text("User ID"),
-              ),
-            ),
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: const Icon(Icons.phone),
-                title: Text(phone),
-                subtitle: const Text("Mobile Number"),
               ),
             ),
             Card(
