@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loginsignup/presentation/screens/auth/login_screen.dart';
 import 'package:loginsignup/data/local/user_storage.dart';
-import 'uploaded_items_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -268,30 +267,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
 
             const SizedBox(height: 20),
-
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UploadedItemsScreen(),
-                  ),
-                );
-              },
-              child: const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Your Uploaded Items",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
 
             ElevatedButton.icon(
               onPressed: _forgotPassword,
