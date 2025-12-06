@@ -3,6 +3,7 @@ import 'package:loginsignup/presentation/screens/admin/users_management.dart';
 import 'package:loginsignup/presentation/screens/admin/posts_management.dart';
 import 'package:loginsignup/data/local/user_storage.dart';
 import 'package:loginsignup/presentation/screens/auth/login_screen.dart';
+import 'package:loginsignup/presentation/screens/profile/profile_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -26,6 +27,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
         title: const Text('Admin Dashboard'),
         backgroundColor: Colors.red,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
+              );
+            },
+            tooltip: 'Profile',
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () async {

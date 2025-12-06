@@ -2,13 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loginsignup/presentation/screens/auth/login_screen.dart';
+import 'package:loginsignup/data/local/user_storage.dart';
 import 'uploaded_items_screen.dart';
 
 class ProfilePage extends StatefulWidget {
-  final String role;
-  final String userId;
-
-  const ProfilePage({super.key, required this.role, required this.userId});
+  const ProfilePage({super.key});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
@@ -18,10 +16,30 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _image;
   final ImagePicker _picker = ImagePicker();
 
-  String name = "Yuvraj Singh Parmar";
-  String email = "yuvraj@example.com";
+  String name = "Loading...";
+  String email = "Loading...";
+  String role = "Loading...";
+  String userId = "";
   String phone = "+91 9876543210";
   String address = "Indore, Madhya Pradesh";
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userData = await UserStorage.getUser();
+    setState(() {
+      userId = userData['userId'] ?? '';
+      name = userData['username'] ?? 'Unknown User';
+      email = userData['email'] ?? 'No email';
+      role = userData['role'] ?? 'CUSTOMER';
+      isLoading = false;
+    });
+  }
 
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -212,6 +230,37 @@ class _ProfilePageState extends State<ProfilePage> {
                 leading: const Icon(Icons.email),
                 title: Text(email),
                 subtitle: const Text("Email Address"),
+              ),
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: Icon(
+                  role == 'ADMIN'
+                      ? Icons.admin_panel_settings
+                      : role == 'OWNER'
+                      ? Icons.business
+                      : Icons.person_outline,
+                  color: role == 'ADMIN'
+                      ? Colors.red
+                      : role == 'OWNER'
+                      ? Colors.green
+                      : Colors.blue,
+                ),
+                title: Text(role),
+                subtitle: const Text("Account Type"),
+              ),
+            ),
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                leading: const Icon(Icons.badge),
+                title: Text(userId),
+                subtitle: const Text("User ID"),
               ),
             ),
             Card(
