@@ -146,7 +146,7 @@ class _MyLoginState extends State<MyLogin> {
             Container(
               padding: const EdgeInsets.only(left: 35, top: 130),
               child: const Text(
-                'Welcome',
+                'Welcome to RentHub',
                 style: TextStyle(
                   color: Colors.black,
                   fontSize: 33,
