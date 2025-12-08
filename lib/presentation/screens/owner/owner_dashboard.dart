@@ -7,6 +7,7 @@ import 'package:loginsignup/presentation/screens/owner/edit_property_screen.dart
 import 'package:loginsignup/presentation/screens/owner/upload_property_screen.dart';
 import 'package:loginsignup/presentation/screens/auth/login_screen.dart';
 import 'package:loginsignup/presentation/screens/profile/profile_screen.dart';
+import 'package:loginsignup/presentation/screens/owner/owner_requests_screen.dart';
 
 class OwnerDashboard extends StatefulWidget {
   const OwnerDashboard({super.key});
@@ -147,6 +148,18 @@ class _OwnerDashboardState extends State<OwnerDashboard> {
         title: Text('Owner Dashboard - $username'),
         backgroundColor: Colors.orange,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.mail),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const OwnerRequestsScreen(),
+                ),
+              );
+            },
+            tooltip: 'View Requests',
+          ),
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:loginsignup/core/services/api_service.dart';
 import 'package:loginsignup/data/local/global_data.dart';
+import 'package:loginsignup/data/local/user_storage.dart';
 
 class MyFurniture extends StatefulWidget {
   const MyFurniture({super.key});
@@ -445,6 +446,26 @@ class _MyFurnitureState extends State<MyFurniture> {
                           ],
                         ),
                       ),
+                    if (product["userUploaded"] != true)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () => _showRequestDialog(product),
+                            icon: const Icon(Icons.send, size: 16),
+                            label: const Text("Request"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -531,6 +552,99 @@ class _MyFurnitureState extends State<MyFurniture> {
           ),
       ],
     );
+  }
+
+  void _showRequestDialog(Map<String, dynamic> product) {
+    final TextEditingController messageController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Send Request'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Item: ${product["title"]}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Owner: ${product["ownerName"] ?? "Unknown"}'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: messageController,
+              decoration: const InputDecoration(
+                labelText: 'Message (optional)',
+                hintText: 'Add a message to the owner...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _sendRequest(product, messageController.text);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Send Request'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendRequest(
+    Map<String, dynamic> product,
+    String message,
+  ) async {
+    try {
+      final userId = await UserStorage.getUserId();
+      if (userId == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Please login to send a request'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      final success = await ApiService.sendRequest(
+        propertyId: product["id"],
+        requesterId: userId,
+        message: message.isEmpty ? "I'm interested in this item" : message,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success ? 'Request sent successfully!' : 'Failed to send request',
+            ),
+            backgroundColor: success ? Colors.green : Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
   }
 
   @override

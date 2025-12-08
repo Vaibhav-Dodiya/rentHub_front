@@ -185,4 +185,89 @@ class ApiService {
       return {'status': 'error', 'message': 'Network error: $e'};
     }
   }
+
+  /// Send a request for a property
+  static Future<bool> sendRequest({
+    required String propertyId,
+    required String requesterId,
+    required String message,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/requests'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'propertyId': propertyId,
+          'requesterId': requesterId,
+          'message': message,
+        }),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error sending request: $e');
+      return false;
+    }
+  }
+
+  /// Get all requests for an owner
+  static Future<List<Map<String, dynamic>>> getOwnerRequests(
+    String ownerId,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/requests/owner/$ownerId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching owner requests: $e');
+      return [];
+    }
+  }
+
+  /// Get all requests made by a customer
+  static Future<List<Map<String, dynamic>>> getCustomerRequests(
+    String customerId,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/requests/customer/$customerId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.cast<Map<String, dynamic>>();
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching customer requests: $e');
+      return [];
+    }
+  }
+
+  /// Update request status
+  static Future<bool> updateRequestStatus(
+    String requestId,
+    String status,
+  ) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/requests/$requestId/status'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'status': status}),
+      );
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print('Error updating request status: $e');
+      return false;
+    }
+  }
 }

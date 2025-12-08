@@ -29,6 +29,11 @@ class UserStorage {
     };
   }
 
+  static Future<String?> getUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_keyUserId);
+  }
+
   static Future<String?> getRole() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyRole);
