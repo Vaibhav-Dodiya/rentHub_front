@@ -270,4 +270,26 @@ class ApiService {
       return false;
     }
   }
+
+  /// Check if a request already exists
+  static Future<bool> checkRequestExists(
+    String propertyId,
+    String requesterId,
+  ) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/requests/check/$propertyId/$requesterId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return data['exists'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      print('Error checking request: $e');
+      return false;
+    }
+  }
 }

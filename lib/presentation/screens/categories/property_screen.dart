@@ -15,6 +15,7 @@ class MyProperty extends StatefulWidget {
 class _MyPropertyState extends State<MyProperty> {
   List<Map<String, dynamic>> properties = [];
   bool isLoading = true;
+  Map<String, bool> requestedItems = {}; // Track requested items
 
   final List<XFile> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
@@ -31,6 +32,10 @@ class _MyPropertyState extends State<MyProperty> {
       final fetchedProperties = await ApiService.getPropertiesByCategory(
         'PROPERTY',
       );
+
+      // Get current user ID to check requests
+      final userId = await UserStorage.getUserId();
+
       setState(() {
         properties = fetchedProperties.map((prop) {
           return {
@@ -43,10 +48,24 @@ class _MyPropertyState extends State<MyProperty> {
             "discount": prop['discount'] ?? '',
             "delivery": prop['deliveryInfo'] ?? '',
             "userUploaded": false,
+            "ownerName": prop['ownerName'],
           };
         }).toList();
         isLoading = false;
       });
+
+      // Check which items are already requested
+      if (userId != null) {
+        for (var property in properties) {
+          final exists = await ApiService.checkRequestExists(
+            property['id'],
+            userId,
+          );
+          setState(() {
+            requestedItems[property['id']] = exists;
+          });
+        }
+      }
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
@@ -451,19 +470,42 @@ class _MyPropertyState extends State<MyProperty> {
                         padding: const EdgeInsets.only(top: 8),
                         child: SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showRequestDialog(property),
-                            icon: const Icon(Icons.send, size: 16),
-                            label: const Text("Request"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
+                          child: requestedItems[property["id"]] == true
+                              ? ElevatedButton.icon(
+                                  onPressed: null,
+                                  icon: const Icon(
+                                    Icons.check_circle,
+                                    size: 16,
+                                  ),
+                                  label: const Text("Requested"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.grey,
+                                    disabledForegroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton.icon(
+                                  onPressed: () => _showRequestDialog(property),
+                                  icon: const Icon(Icons.send, size: 16),
+                                  label: const Text("Request"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                   ],
@@ -627,6 +669,13 @@ class _MyPropertyState extends State<MyProperty> {
         requesterId: userId,
         message: message.isEmpty ? "I'm interested in this property" : message,
       );
+
+      if (success) {
+        // Update requested state
+        setState(() {
+          requestedItems[property["id"]] = true;
+        });
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -15,6 +15,7 @@ class MyElectronics extends StatefulWidget {
 class _MyElectronicsState extends State<MyElectronics> {
   List<Map<String, dynamic>> products = [];
   bool isLoading = true;
+  Map<String, bool> requestedItems = {}; // Track requested items
 
   final List<XFile> _selectedImages = [];
   final ImagePicker _picker = ImagePicker();
@@ -31,6 +32,9 @@ class _MyElectronicsState extends State<MyElectronics> {
       final fetchedProperties = await ApiService.getPropertiesByCategory(
         'ELECTRONICS',
       );
+
+      final userId = await UserStorage.getUserId();
+
       setState(() {
         products = fetchedProperties.map((prop) {
           return {
@@ -43,10 +47,23 @@ class _MyElectronicsState extends State<MyElectronics> {
             "discount": prop['discount'] ?? '',
             "delivery": prop['deliveryInfo'] ?? '',
             "userUploaded": false,
+            "ownerName": prop['ownerName'],
           };
         }).toList();
         isLoading = false;
       });
+
+      if (userId != null) {
+        for (var product in products) {
+          final exists = await ApiService.checkRequestExists(
+            product['id'],
+            userId,
+          );
+          setState(() {
+            requestedItems[product['id']] = exists;
+          });
+        }
+      }
     } catch (e) {
       setState(() => isLoading = false);
       if (mounted) {
@@ -451,19 +468,42 @@ class _MyElectronicsState extends State<MyElectronics> {
                         padding: const EdgeInsets.only(top: 8),
                         child: SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () => _showRequestDialog(product),
-                            icon: const Icon(Icons.send, size: 16),
-                            label: const Text("Request"),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                          ),
+                          child: requestedItems[product["id"]] == true
+                              ? ElevatedButton.icon(
+                                  onPressed: null,
+                                  icon: const Icon(
+                                    Icons.check_circle,
+                                    size: 16,
+                                  ),
+                                  label: const Text("Requested"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey,
+                                    foregroundColor: Colors.white,
+                                    disabledBackgroundColor: Colors.grey,
+                                    disabledForegroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                )
+                              : ElevatedButton.icon(
+                                  onPressed: () => _showRequestDialog(product),
+                                  icon: const Icon(Icons.send, size: 16),
+                                  label: const Text("Request"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                ),
                         ),
                       ),
                   ],
@@ -627,6 +667,12 @@ class _MyElectronicsState extends State<MyElectronics> {
         requesterId: userId,
         message: message.isEmpty ? "I'm interested in this item" : message,
       );
+
+      if (success) {
+        setState(() {
+          requestedItems[product["id"]] = true;
+        });
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
