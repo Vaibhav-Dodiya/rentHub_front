@@ -255,13 +255,19 @@ class ApiService {
   /// Update request status
   static Future<bool> updateRequestStatus(
     String requestId,
-    String status,
-  ) async {
+    String status, {
+    String? ownerResponse,
+  }) async {
     try {
+      final Map<String, String> body = {'status': status};
+      if (ownerResponse != null && ownerResponse.isNotEmpty) {
+        body['ownerResponse'] = ownerResponse;
+      }
+
       final response = await http.put(
         Uri.parse('$baseUrl/api/requests/$requestId/status'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'status': status}),
+        body: jsonEncode(body),
       );
 
       return response.statusCode == 200;

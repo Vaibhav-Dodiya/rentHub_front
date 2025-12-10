@@ -3,6 +3,7 @@ import 'package:loginsignup/presentation/screens/categories/electronics_screen.d
 import 'package:loginsignup/presentation/screens/categories/furniture_screen.dart';
 import 'package:loginsignup/presentation/screens/categories/property_screen.dart';
 import 'package:loginsignup/presentation/screens/profile/profile_screen.dart';
+import 'package:loginsignup/presentation/screens/customer/customer_requests_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -71,6 +72,18 @@ class _HomePageState extends State<HomePage> {
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
         actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CustomerRequestsScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.mail_outline, size: 28, color: Colors.white),
+            tooltip: 'My Requests',
+          ),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.search, size: 28, color: Colors.white),

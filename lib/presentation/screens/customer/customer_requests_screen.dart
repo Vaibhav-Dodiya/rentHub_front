@@ -3,14 +3,14 @@ import 'package:loginsignup/core/services/api_service.dart';
 import 'package:loginsignup/data/local/user_storage.dart';
 import 'package:intl/intl.dart';
 
-class OwnerRequestsScreen extends StatefulWidget {
-  const OwnerRequestsScreen({super.key});
+class CustomerRequestsScreen extends StatefulWidget {
+  const CustomerRequestsScreen({super.key});
 
   @override
-  State<OwnerRequestsScreen> createState() => _OwnerRequestsScreenState();
+  State<CustomerRequestsScreen> createState() => _CustomerRequestsScreenState();
 }
 
-class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
+class _CustomerRequestsScreenState extends State<CustomerRequestsScreen> {
   List<Map<String, dynamic>> requests = [];
   bool isLoading = true;
   String selectedFilter = 'ALL'; // ALL, PENDING, ACCEPTED, REJECTED
@@ -26,7 +26,7 @@ class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
     try {
       final userId = await UserStorage.getUserId();
       if (userId != null) {
-        final fetchedRequests = await ApiService.getOwnerRequests(userId);
+        final fetchedRequests = await ApiService.getCustomerRequests(userId);
         setState(() {
           requests = fetchedRequests;
           isLoading = false;
@@ -52,7 +52,7 @@ class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Requests'),
-        backgroundColor: Colors.orange,
+        backgroundColor: Colors.blue,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -139,8 +139,8 @@ class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
           selectedFilter = filter;
         });
       },
-      selectedColor: Colors.orange[200],
-      checkmarkColor: Colors.orange[900],
+      selectedColor: Colors.blue[200],
+      checkmarkColor: Colors.blue[900],
     );
   }
 
@@ -183,7 +183,7 @@ class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    request['propertyTitle'] ?? 'Unknown Property',
+                    request['propertyTitle'] ?? 'Unknown Item',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -230,7 +230,7 @@ class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
-                request['propertyCategory'] ?? 'Property',
+                request['propertyCategory'] ?? 'Item',
                 style: TextStyle(
                   fontSize: 11,
                   color: Colors.blue[900],
@@ -239,199 +239,128 @@ class _OwnerRequestsScreenState extends State<OwnerRequestsScreen> {
               ),
             ),
             const Divider(height: 24),
-            // Requester info
+            // Owner info
             Row(
               children: [
-                const Icon(Icons.person, size: 16, color: Colors.blue),
+                const Icon(Icons.person, size: 16, color: Colors.orange),
                 const SizedBox(width: 4),
                 Text(
-                  'From: ',
+                  'Owner: ',
                   style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                 ),
                 Expanded(
                   child: Text(
-                    request['requesterName'] ?? 'Unknown',
+                    request['ownerName'] ?? 'Unknown',
                     style: const TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Colors.blue,
+                      color: Colors.orange,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                const Icon(Icons.email, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    request['requesterEmail'] ?? 'No email',
-                    style: TextStyle(fontSize: 12, color: Colors.grey[700]),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 8),
-            // Message
+            // My message
             if (request['message'] != null &&
                 request['message'].toString().isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  request['message'],
-                  style: const TextStyle(fontSize: 13),
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Your message:',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      request['message'],
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-            const SizedBox(height: 8),
+            // Owner response (if accepted)
+            if (status == 'ACCEPTED' &&
+                request['ownerResponse'] != null &&
+                request['ownerResponse'].toString().isNotEmpty)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 16,
+                              color: Colors.green[700],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Accepted - Owner\'s Response:',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          request['ownerResponse'],
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        if (request['responseDate'] != null) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Responded: ${DateFormat('MMM dd, yyyy • HH:mm').format(DateTime.parse(request['responseDate']))}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
             // Date
             Row(
               children: [
                 Icon(Icons.access_time, size: 14, color: Colors.grey[600]),
                 const SizedBox(width: 4),
                 Text(
-                  formattedDate,
+                  'Requested: $formattedDate',
                   style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 ),
               ],
             ),
-            // Action buttons (only for pending requests)
-            if (status == 'PENDING') ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () =>
-                          _updateRequestStatus(request['id'], 'REJECTED'),
-                      icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Reject'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () => _showAcceptDialog(request),
-                      icon: const Icon(Icons.check, size: 18),
-                      label: const Text('Accept'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
           ],
         ),
       ),
     );
-  }
-
-  void _showAcceptDialog(Map<String, dynamic> request) {
-    final TextEditingController messageController = TextEditingController(
-      text:
-          'I accept your request. I will contact you soon at ${request['requesterEmail']}.',
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Accept Request'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Send acknowledgment to ${request['requesterName']}',
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: messageController,
-              decoration: const InputDecoration(
-                labelText: 'Your message',
-                hintText: 'Let them know you accept and will contact...',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 4,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _updateRequestStatus(
-                request['id'],
-                'ACCEPTED',
-                ownerResponse: messageController.text,
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Accept & Send'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _updateRequestStatus(
-    String requestId,
-    String status, {
-    String? ownerResponse,
-  }) async {
-    try {
-      final success = await ApiService.updateRequestStatus(
-        requestId,
-        status,
-        ownerResponse: ownerResponse,
-      );
-      if (success) {
-        await _loadRequests();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Request ${status.toLowerCase()} successfully'),
-              backgroundColor: status == 'ACCEPTED' ? Colors.green : Colors.red,
-            ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to update request'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
-    }
   }
 }
